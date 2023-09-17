@@ -23,9 +23,12 @@ export const authOptions = {
       return true;
     },
     async jwt({ token, trigger, session }) {
+      const user = await getUserByEmail({ email: token.email });
+      token.user = user; // modify user details from database as user of the token
       return token;
     },
     async session({ session, token }) {
+      session.user = token.user; // modify user details from database as user of the session
       return session;
     },
   },
@@ -59,4 +62,17 @@ async function signInWithOAuth({ account, profile }) {
   await newUser.save();
 
   return true;
+}
+
+/**
+ * 
+ * @param {*} param0 
+ * @returns user details from database
+ */
+async function getUserByEmail({ email }) {
+  const user = await User.findOne({ email }).select('-password');
+
+  if (!user) throw new Error('Email does not exist!');
+
+  return { ...user._doc, _id: user._id.toString() };
 }
