@@ -8,16 +8,18 @@ const ProfileUpdate = ({ update }) => {
     const name = formData.get('name');
     const image = formData.get('image');
 
-    /**
-     * when update() is run client side, the page will re-render
-     * Server side will not re-render
-     */
-    if (update) {
-      update({ name, image });
-    }
-
     const res = await updateUser({ name, image });
-    if (res?.msg) alert(res?.msg);
+    if (res?.msg) {
+      alert(res?.msg);
+
+      /**
+       * when update() is run client side, the page will re-render
+       * Server side will not re-render
+       */
+      if (update) {
+        update({ name, image });
+      }
+    }
   }
 
   return (
