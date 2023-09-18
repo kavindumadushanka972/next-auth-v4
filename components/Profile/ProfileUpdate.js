@@ -16,6 +16,7 @@ const ProfileUpdate = ({ update }) => {
        * when update() is run client side, the page will re-render
        * Server side will not re-render
        */
+      // the update() method will trigger a jwt callback with the trigger: "update" option
       if (update) {
         update({ name, image });
       }

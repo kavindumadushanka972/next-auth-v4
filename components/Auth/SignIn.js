@@ -1,5 +1,6 @@
 'use client';
 import { signIn } from 'next-auth/react';
+import Link from 'next/link';
 
 /**
  * Signs in users with desired providers and redirect the user to
@@ -17,6 +18,10 @@ const SignIn = ({ callbackUrl }) => {
         <button onClick={() => signIn('google', { callbackUrl })}>
           Continue with Google
         </button>
+      </div>
+
+      <div style={{margin: '30px 0'}}>
+        <Link href="/signup">Sign Up</Link>
       </div>
     </div>
   );
