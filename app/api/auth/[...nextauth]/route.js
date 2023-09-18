@@ -1,7 +1,9 @@
 import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import CredentialsProvider from 'next-auth/providers/credentials';
 import connectDB from '@/utils/database';
 import User from '@/models/userModel';
+import bcrypt from 'bcrypt'
 
 connectDB();
 
@@ -11,9 +13,23 @@ export const authOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email', required: true },
+        password: { label: 'Password', type: 'password', required: true },
+      },
+      async authorize(credentials, req) {
+        const { email, password } = credentials;
+
+        const user = await signInWithCredentials({email, password})
+        return user;
+      },
+    }),
   ],
   pages: {
-    signIn: '/signin',
+    signIn: '/signin', // app/signin
+    error: '/errors' // app/errors
   },
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
@@ -23,7 +39,7 @@ export const authOptions = {
       return true;
     },
     async jwt({ token, trigger, session }) {
-      if(trigger === 'update') {
+      if (trigger === 'update') {
         token.user.name = session.name;
         token.user.image = session.image;
       }
@@ -70,8 +86,8 @@ async function signInWithOAuth({ account, profile }) {
 }
 
 /**
- * 
- * @param {*} param0 
+ *
+ * @param {*} param0
  * @returns user details from database
  */
 async function getUserByEmail({ email }) {
@@ -80,4 +96,16 @@ async function getUserByEmail({ email }) {
   if (!user) throw new Error('Email does not exist!');
 
   return { ...user._doc, _id: user._id.toString() };
+}
+
+async function signInWithCredentials({email, password}) {
+  const user = await User.findOne({email})
+
+  if(!user) throw new Error('Email does not exist!')
+
+  const compare = await bcrypt.compare(password, user.password)
+
+  if(!compare) throw new Error('Password incorrect!')
+
+  return {...user._doc, _id: user._id.toString()}
 }
