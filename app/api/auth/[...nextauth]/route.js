@@ -23,6 +23,11 @@ export const authOptions = {
       return true;
     },
     async jwt({ token, trigger, session }) {
+      if(trigger === 'update') {
+        token.user.name = session.name;
+        token.user.image = session.image;
+      }
+
       const user = await getUserByEmail({ email: token.email });
       token.user = user; // modify user details from database as user of the token
       return token;
