@@ -152,11 +152,33 @@ export async function forgotPasswordWithCredentials({ email }) {
     await sendEmail({
       to: email,
       url: `${BASE_URL}/reset_password?token=${token}`,
-      text: 'RESET PASSWORD'
-    })
+      text: 'RESET PASSWORD',
+    });
 
     return {
       msg: 'Success! Check your email to reset your password.',
+    };
+  } catch (error) {
+    redirect(`/errors?error=${error.message}`);
+  }
+}
+
+/**
+ * Resets the user password
+ * @param {Object} params - An object containing email.
+ * @param {Object} params.token - token object containing user id.
+ * @param {*} params.password - new password
+ * @returns
+ */
+export async function resetPasswordWithCredentials({ token, password }) {
+  try {
+    const { userId } = verifyToken(token);
+    const newPass = await bcrypt.hash(password, 12);
+
+    await User.findByIdAndUpdate(userId, { password: newPass });
+
+    return {
+      msg: 'Success! Your password has been reset.',
     };
   } catch (error) {
     redirect(`/errors?error=${error.message}`);
