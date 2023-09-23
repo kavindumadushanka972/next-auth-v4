@@ -1,4 +1,5 @@
 'use client';
+import { forgotPasswordWithCredentials } from '@/actions/authActions';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import Button from '../global/Button';
@@ -11,17 +12,26 @@ import Form from '../global/Form';
  * @returns
  */
 const SignIn = ({ callbackUrl }) => {
-
   async function handleCredentialsLogin(formData) {
-    const email = formData.get('email')
-    const password = formData.get('password')
+    const email = formData.get('email');
+    const password = formData.get('password');
 
-    /** 
-     * signIn will trigger 
-     * async signIn({ user, account, profile, email, credentials }) 
-     * in callbacks 
-    */
-    await signIn('credentials', {email, password, callbackUrl})
+    /**
+     * signIn will trigger
+     * async signIn({ user, account, profile, email, credentials })
+     * in callbacks
+     */
+    await signIn('credentials', { email, password, callbackUrl });
+  }
+
+  /**
+   * sends an email with encrypted user id
+   * @param {*} formData
+   */
+  async function handleForgotPassword(formData) {
+    const email = formData.get('email');
+    const res = await forgotPasswordWithCredentials({ email });
+    if (res?.msg) alert(res?.msg);
   }
 
   return (
@@ -46,6 +56,13 @@ const SignIn = ({ callbackUrl }) => {
           required
         />
         <Button value="Login Using Credentials" />
+      </Form>
+
+      {/* Forgot password */}
+      <h3>Forgot Password?</h3>
+      <Form action={handleForgotPassword} style={{ margin: '10px 0' }}>
+        <input type="email" name="email" placeholder="Email" required />
+        <Button value="Forgot Password" />
       </Form>
 
       <div style={{ margin: '30px 0' }}>
