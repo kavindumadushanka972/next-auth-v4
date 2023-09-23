@@ -10,10 +10,10 @@ import sendEmail from '@/utils/sendEmail';
 const BASE_URL = process.env.NEXTAUTH_URL;
 
 export async function updateUser({ name, image }) {
-  const session = await getServerSession(authOptions);
-  if (!session) throw new Error('Unauthorized!');
-
   try {
+    const session = await getServerSession(authOptions);
+    if (!session) throw new Error('Unauthorized!');
+
     const user = await User.findByIdAndUpdate(
       session?.user?._id,
       {
@@ -72,7 +72,35 @@ export async function verifyWithCredentials(token) {
     return {
       msg: 'Verification success!',
     };
+  } catch (error) {
+    redirect(`/errors?error=${error.message}`);
+  }
+}
 
+export async function changePasswordWithCredentials({ old_pass, new_pass }) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) throw new Error('Unauthorized!');
+
+    if (session?.user?.provider !== 'credentials') {
+      throw new Error(
+        `This account is signed in with ${session?.user?.provider}. You can't change the password!`
+      );
+    }
+
+    const user = await User.findById(session?.user?._id);
+    if (!user) throw new Error('User does not exist!');
+
+    const compare = await bcrypt.compare(old_pass, user.password);
+    if (!compare) throw new Error('Old password does not match!');
+
+    const newPass = await bcrypt.hash(new_pass, 12);
+
+    await User.findByIdAndUpdate(user._id, { password: newPass });
+
+    return {
+      msg: 'Password Changed Successfully!',
+    };
   } catch (error) {
     redirect(`/errors?error=${error.message}`);
   }
