@@ -22,6 +22,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - Reset Password
 - Middleware to secure certain pages(Admin Pages)
 
+### .env variables
 ```dotenv
 NEXTAUTH_URL= # ex: http://localhost:3000
 NEXTAUTH_SECRET= # type openssl rand -base64 32 on the terminal and put generated value here. Used by NextAuth
